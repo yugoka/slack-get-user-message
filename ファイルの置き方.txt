@@ -1,0 +1,1 @@
+inputフォルダの直下にchannels.jsonが来るように配置して下さい
