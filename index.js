@@ -6,6 +6,18 @@ const path = require("path");
 const importPath = "./input";
 const exportPath = "./user_log";
 
+//ファイルを含めるかどうか
+const includeFiles = false;
+
+//リッチテキストの内容を含めるかどうか
+const includeBlocks = false;
+
+//プロフィール内容を含めるかどうか
+const includeProfile = false;
+
+//メッセージテキストだけを列挙したjsonを作成する
+const createMsgListJson = true;
+
 //保存対象外のユーザー名
 const excludeUserNames = [
   "GitHub",
@@ -64,6 +76,19 @@ const parseJSON = async (targetPath) => {
           continue;
         }
 
+        if (!includeFiles) {
+          delete msg.files;
+          delete msg.attachments;
+        }
+
+        if (!includeBlocks) {
+          delete msg.blocks;
+        }
+
+        if (!includeProfile) {
+          delete msg.user_profile;
+        }
+
         const userID = msg.user;
         userMessages[userID].push(msg);
       }
@@ -84,5 +109,17 @@ const parseJSON = async (targetPath) => {
       path.join(exportPath, fileName),
       JSON.stringify(messages, null, 2)
     );
+
+    //テキスト内容だけを列挙したjsonを作成(ほんのり前処理も)
+    if (createMsgListJson) {
+      const fileName = `text_${user.real_name}_${user.id}.json`;
+      const messages = userMessages[user.id].map((msg) => {
+        return msg.text.replace(/\<.+?\>/g, "").replace(/\n/g, " ");
+      });
+      await fs.writeFile(
+        path.join(exportPath, fileName),
+        JSON.stringify(messages, null, 2)
+      );
+    }
   }
 })();
