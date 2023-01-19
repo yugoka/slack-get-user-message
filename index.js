@@ -18,6 +18,9 @@ const includeProfile = false;
 //メッセージテキストだけを列挙したjsonを作成する
 const createMsgListJson = true;
 
+//メッセージテキストだけを列挙したtextを作成する(マルコフ連鎖とか用)
+const createMsgListText = true;
+
 //保存対象外のユーザー名
 const excludeUserNames = [
   "GitHub",
@@ -120,6 +123,17 @@ const parseJSON = async (targetPath) => {
         path.join(exportPath, fileName),
         JSON.stringify(messages, null, 2)
       );
+    }
+
+    //テキストだけを改行区切りで列挙したtxtを作成
+    if (createMsgListText) {
+      const fileName = `${user.real_name}_${user.id}.txt`;
+      const messages = userMessages[user.id].map((msg) => {
+        return msg.text.replace(/\<.+?\>/g, "").replace(/\n/g, " ");
+      });
+
+      const text = messages.reduce((txt, current) => txt + current + "\n", "");
+      await fs.writeFile(path.join(exportPath, fileName), text);
     }
   }
 })();
